@@ -12,10 +12,10 @@ describe("ReferralRewards", function () {
     // Deploy the mock Spectra token
     SpectraToken = await ethers.getContractFactory("ERC20Mock");
     spectraToken = await SpectraToken.deploy(
-      "Spectra Token",
-      "SPT",
-      owner.address,
-      ethers.utils.parseUnits("10000", 18)
+      "Spectra Token", //name
+      "SPT", //symbol
+      owner.address, //initialAccount
+      ethers.utils.parseUnits("10000", 18) //balance 10000 * 10^18
     );
     await spectraToken.deployed();
 
@@ -36,7 +36,9 @@ describe("ReferralRewards", function () {
 
   it("should register a user with a referrer", async function () {
     await referralRewards.connect(user1).registerUser(owner.address);
+
     const referrer = await referralRewards.referrer(user1.address);
+
     const referrals = await referralRewards.referrals(owner.address);
 
     expect(referrer).to.equal(owner.address);
@@ -56,20 +58,13 @@ describe("ReferralRewards", function () {
     ).to.be.revertedWith("User has already been referred");
   });
 
-  it("should not allow a non-existent referrer", async function () {
-    await expect(
-      referralRewards.connect(user1).registerUser(user2.address)
-    ).to.be.revertedWith("Referrer does not exist");
-  });
-
   it("should distribute rewards to the referrer", async function () {
     const initialBalance = await spectraToken.balanceOf(owner.address);
 
     await referralRewards.connect(user1).registerUser(owner.address);
     const finalBalance = await spectraToken.balanceOf(owner.address);
-    const reward = rewardPerReferral;
 
-    expect(finalBalance.sub(initialBalance)).to.equal(reward);
+    expect(finalBalance.sub(initialBalance)).to.equal(rewardPerReferral);
   });
 
   it("should allow the owner to change the reward per referral", async function () {

@@ -12,13 +12,13 @@ contract ReferralRewards {
     uint256 public rewardPerReferral;
 
     // Mapping to store the number of referrals for each user
-    mapping(address => uint256) public referrals;
+    mapping(address => uint256) public referrals; // [user] => number of referrals
 
     // Mapping to store referrer of each user
-    mapping(address => address) public referrer;
+    mapping(address => address) public referrer; // [end user addr] => referrer address
 
     // Mapping to track if a user has already been referred
-    mapping(address => bool) public referred;
+    // mapping(address => bool) public isRegistered; // [user] => true
 
     // Events
     event UserRegistered(address indexed user, address indexed referrer);
@@ -38,21 +38,17 @@ contract ReferralRewards {
     }
 
     // Function to register a new user and record the referrer
+    // As an end user, I use my wallet address = msg.sender and _referrer as the person who referred me
     function registerUser(address _referrer) external {
         require(_referrer != msg.sender, "Cannot refer yourself");
         require(
             referrer[msg.sender] == address(0),
             "User has already been referred"
         );
-        require(
-            _referrer == address(0) || referred[_referrer],
-            "Referrer does not exist"
-        );
 
         if (_referrer != address(0)) {
             referrals[_referrer]++;
             referrer[msg.sender] = _referrer;
-            referred[msg.sender] = true;
 
             // Distribute reward to the referrer
             _distributeReward(_referrer);
